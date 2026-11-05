@@ -10,7 +10,7 @@ import struct
 # Message version
 # -----------------------------
 MSG_MAJOR_VERSION = 1
-MSG_MINOR_VERSION = 0
+MSG_MINOR_VERSION = 1   # 1:  header seq and session (bytes 16-23)
 
 # -----------------------------
 # Message type constants
@@ -103,19 +103,22 @@ WORD_FIELD_TABLE = {
 # Header struct (192-bit / 24 bytes)
 # -----------------------------
 
-# HEADER: 0xMMAABB00 NNNNNNNN TTTTTTTT TTTTTTTT 00000000 00000000
-#    M=messsage type, A=major version, B=minor version, N=number of words, T=timestamp
+# HEADER: 0xMMAABB00 NNNNNNNN TTTTTTTT TTTTTTTT SSSSSSSS EEEEEEEE
+#    M=messsage type, A=major version, B=minor version, N=number of words, T=timestamp,
+#    S=seq (DATA:  message count in this session, from 0, wraps;  0 otherwise),
+#    E=session (DATA:  random at each data server start, restart:  new session;  0 otherwise)
 
-HEADER_STRUCT = struct.Struct('<cBBBIQ8x') # message_type,
-HEADER_FIELDS = ("msg_type", "pacman", "major_version", "minor_version", "n_bytes", "timestamp")
+HEADER_STRUCT = struct.Struct('<cBBBIQII') # message_type,
+HEADER_FIELDS = ("msg_type", "pacman", "major_version", "minor_version", "n_bytes", "timestamp", "seq", "session")
 HEADER_LEN = HEADER_STRUCT.size
 
 # -----------------------------
 # Header functions
 # -----------------------------
-def pack_header(msg_type, n_bytes, timestamp, pacman=0):
+def pack_header(msg_type, n_bytes, timestamp, pacman=0, seq=0, session=0):
     msg_type_byte = MSG_TYPE_TABLE[msg_type]
-    return HEADER_STRUCT.pack(msg_type_byte, pacman, MSG_MAJOR_VERSION, MSG_MINOR_VERSION, n_bytes, timestamp)
+    return HEADER_STRUCT.pack(msg_type_byte, pacman, MSG_MAJOR_VERSION, MSG_MINOR_VERSION, n_bytes, timestamp,
+                              seq, session)
 
 def unpack_header(header_bytes):
     msg_type = MSG_TYPE_TABLE_INV[header_bytes[0:1]]
@@ -225,7 +228,8 @@ def content_err(*, error_code, pacman=0, timestamp=0):
 
 def print_header(header):
     parsed = parse_header(header)
-    print("msg_type: {msg_type} pacman: {pacman} version: {major_version}.{minor_version} n_bytes: {n_bytes} timestamp: {timestamp}".format(**parsed))
+    print("msg_type: {msg_type} pacman: {pacman} version: {major_version}.{minor_version} n_bytes: {n_bytes} timestamp: {timestamp}".format(**parsed)
+          + " seq: {seq} session: 0x{session:08X}".format(**parsed))
     return
 
 def print_word(word):
@@ -320,7 +324,7 @@ def pack_string_msg(s, timestamp=0, pacman=0):
 # --- unpack a single string message ---
 def unpack_string_msg(msg_bytes):
     header = unpack_header(msg_bytes[:HEADER_LEN])
-    n_bytes = header[4]  # header tuple: (msg_type, pacman, major, minor, n_bytes, timestamp)
+    n_bytes = header[4]  # Header tuple:  (msg_type, pacman, major, minor, n_bytes, timestamp, seq, session)
     s_bytes = msg_bytes[HEADER_LEN:HEADER_LEN + n_bytes]
     s = s_bytes.decode('utf-8')
     return header, s
