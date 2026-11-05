@@ -8,7 +8,7 @@ interfaces, which have concrete implementations elsewhere.
 from abc import ABC, abstractmethod
 
 
-class asic_config_iface(ABC):
+class AsicConfigIface(ABC):
     """Abstract interface for configuring an ASIC.
 
     Concrete subclasses implement the version-specific details for
@@ -45,7 +45,7 @@ class asic_config_iface(ABC):
         """Set enables for transmitting upstream (from FPGA)"""
         pass
 
-class io_request_iface(ABC):
+class IoRequestIface(ABC):
     """
     Abstract base class for PACMAN communication interfaces.
     """

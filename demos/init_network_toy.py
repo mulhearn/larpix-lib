@@ -2,17 +2,17 @@
 import sys
 from pathlib import Path
 
-from larpix_control import hydra_strand, common
+from larpix_control import HydraStrand, common
 
-from larpix_control.hydra.asic_config_toy import asic_config_toy
+from larpix_control.hydra.asic_config_toy import AsicConfigToy
 
-verbose = True
+VERBOSE = True
 
 def main():
-        toy = asic_config_toy(verbose=True)
+        toy = AsicConfigToy(verbose=True)
         raw_network = common.dict_from_yaml("config/hydra/row.yaml")
         raw_params  = common.dict_from_yaml("config/hydra/parameters.yaml")
-        strand = hydra_strand(raw_network, raw_params, toy)
+        strand = HydraStrand(raw_network, raw_params, toy)
 
         print("INFO: printing table for hydra strand")
         strand.print_hydra_table()

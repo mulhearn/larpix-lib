@@ -4,7 +4,7 @@ import unittest
 import larpix_control.common as common
 import larpix_control.hydra._impl as _hydra
 
-class test_hydra_impl(unittest.TestCase):
+class TestHydraImpl(unittest.TestCase):
     """Tests of hydra/_impl.py functionality"""
 
     def setUp(self):

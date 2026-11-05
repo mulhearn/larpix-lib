@@ -5,7 +5,7 @@ from typing import Optional
 
 
 @dataclass
-class node:
+class Node:
     """
     Represents a single node in the Hydra network.
     """

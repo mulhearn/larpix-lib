@@ -16,19 +16,19 @@ import zmq
 # Exception hierarchy
 # ---------------------------------------------------------------------------
 
-class comm_error(Exception):
+class CommError(Exception):
     """Base class for ZMQ request/response errors."""
 
 
-class request_timeout(comm_error):
+class RequestTimeoutError(CommError):
     """Raised when no reply is received within the configured timeout."""
 
 
-class disconnected(comm_error):
+class DisconnectedError(CommError):
     """Raised when the socket is no longer connected / handshake failed."""
 
 
-class protocol_error(comm_error):
+class ProtocolError(CommError):
     """Raised when the server reply is missing or malformed."""
 
 
@@ -104,9 +104,9 @@ def send_and_receive(sock, msg):
 
     Raises
     ------
-    request_timeout
-    disconnected
-    protocol_error
+    RequestTimeoutError
+    DisconnectedError
+    ProtocolError
     """
 
     if _debug_fn:
@@ -115,19 +115,19 @@ def send_and_receive(sock, msg):
     try:
         sock.send(msg)
     except zmq.error.Again:
-        raise request_timeout("send timed out")
+        raise RequestTimeoutError("send timed out")
     except zmq.error.ZMQError as e:
-        raise disconnected(f"failed to send: {e}")
+        raise DisconnectedError(f"failed to send: {e}")
 
     try:
         reply = sock.recv()
     except zmq.error.Again:
-        raise request_timeout("no reply from server")
+        raise RequestTimeoutError("no reply from server")
     except zmq.error.ZMQError as e:
-        raise disconnected(f"failed to receive: {e}")
+        raise DisconnectedError(f"failed to receive: {e}")
 
     if reply is None:
-        raise protocol_error("empty reply")
+        raise ProtocolError("empty reply")
 
     if _debug_fn:
         _debug_fn(f"REP ← {reply.hex()} ({len(reply)} bytes)")
@@ -150,7 +150,7 @@ def safe_request(sock, msg, retries=1):
     while attempt <= retries:
         try:
             return send_and_receive(sock, msg)
-        except comm_error as e:
+        except CommError as e:
             last_exc = e
             attempt += 1
 

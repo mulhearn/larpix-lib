@@ -1,22 +1,22 @@
 # larpix/asic/asic_config.py
 
 from typing import Any
-from larpix_control.common.interfaces import asic_config_iface, io_request_iface
+from larpix_control.common.interfaces import AsicConfigIface, IoRequestIface
 
-from .asic_spec import asic_spec
+from .asic_spec import AsicSpec
 from . import _fragment as _frag
 
-class asic_config(asic_config_iface):
+class AsicConfig(AsicConfigIface):
     """Concrete ASIC configuration class (no-op skeleton).
 
-    Requires an asic_spec instance and a collapsed fragment library
+    Requires an AsicSpec instance and a collapsed fragment library
     at initialization.
     """
 
-    def __init__(self, io_req: io_request_iface, spec: asic_spec, frag_lib: dict[str, dict], verbose: bool = False):
+    def __init__(self, io_req: IoRequestIface, spec: AsicSpec, frag_lib: dict[str, dict], verbose: bool = False):
         """
         Parameters:
-            spec: an instance of asic_spec representing the hardware
+            spec: an instance of AsicSpec representing the hardware
             frag_lib: dict of collapsed fragments, keyed by name
             verbose: optional flag for printing progress
         """
@@ -27,7 +27,7 @@ class asic_config(asic_config_iface):
 
         if verbose:
             spec_name = spec.name()
-            print(f"asic_config initialized with spec {spec_name} and {len(frag_lib)} fragments")
+            print(f"AsicConfig initialized with spec {spec_name} and {len(frag_lib)} fragments")
 
     # hack for TX during development:
     def tx_list(self, l: [int]):

@@ -1,15 +1,15 @@
 # larpix/common/asic_config_toy.py
 """
-Toy implementation of the common.asic_config interface.
+Toy implementation of the common.AsicConfigIface interface.
 
-This class implements the asic_config ABC without access to hardware.
+This class implements the AsicConfigIface ABC without access to hardware.
 It is used for independent testing of the hydra package.
 """
 
 from larpix_control import common
 
-class asic_config_toy(common.asic_config_iface):
-    """Toy version of asic_config for testing."""
+class AsicConfigToy(common.AsicConfigIface):
+    """Toy version of AsicConfig for testing."""
 
     def __init__(self, verbose = False):
         self.verbose = verbose

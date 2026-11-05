@@ -1,18 +1,18 @@
 import unittest
 
-from larpix_control import hydra_strand, common
+from larpix_control import HydraStrand, common
 
-from larpix_control.hydra.asic_config_toy import asic_config_toy
-verbose = True
+from larpix_control.hydra.asic_config_toy import AsicConfigToy
+VERBOSE = True
 
-class test_asic_model(unittest.TestCase):
+class TestHydraStrand(unittest.TestCase):
     """tests related to asic model structure and verification"""
 
     def setUp(self):
-        self.toy        = asic_config_toy()
+        self.toy        = AsicConfigToy()
         self.raw_hydra  = common.dict_from_yaml("config/hydra/row.yaml")
         self.raw_params = common.dict_from_yaml("config/hydra/parameters.yaml")
-        self.strand = hydra_strand(self.raw_hydra, self.raw_params, self.toy)
+        self.strand = HydraStrand(self.raw_hydra, self.raw_params, self.toy)
 
     def test_aaa_hydra_strand(self):
         print("")

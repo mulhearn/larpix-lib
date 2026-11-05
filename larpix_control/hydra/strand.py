@@ -5,19 +5,19 @@ from copy import deepcopy
 
 import larpix_control.common as common
 from . import _impl as _impl
-from .node import node as hydra_node
+from .node import Node as HydraNode
 
-class strand:
+class Strand:
     """
     Represents a single Hydra network (strand) attached to one UART.
     Owns the network topology, chip states, and an ASIC specification.
     """
-    def __init__(self, raw_hnet: dict, raw_hparams: dict, config: common.asic_config_iface):
+    def __init__(self, raw_hnet: dict, raw_hparams: dict, config: common.AsicConfigIface):
         """
         Initialize the Hydra strand.
 
         Parameters:
-            asic: asic_spec instance for this network (all chips share same ASIC version)
+            asic: AsicSpec instance for this network (all chips share same ASIC version)
             network_raw: raw Hydra network dictionary (YAML-loaded or parsed)
         """
         # keep a reference to the ASIC configuration interface:

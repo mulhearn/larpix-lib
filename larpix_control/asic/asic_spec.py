@@ -6,7 +6,7 @@ import larpix_control.common as common
 from . import _registers as _reg
 from . import _config_packet as _pkt
 
-class asic_spec:
+class AsicSpec:
     """Specifications for a particular ASIC version and related tools.
 
     Defines the version-dependent specification of an ASIC
@@ -210,11 +210,11 @@ class asic_spec:
         """Check if packet is a valid configuration read response."""
         return valid_config_read_response(self.asic_dict, packet)
 
-    def parse_chip_address_value(asic_dict: dict, packet: int) -> [int,int,int]:
+    def parse_chip_address_value(self, packet: int) -> [int,int,int]:
         """Parse chip, address, and value from a valid config packet"""
         return parse_chip_address_value(self.asic_dict, packet)
 
-    def parse_config_packet_fields(asic_dict: dict, packet: int) -> dict:
+    def parse_config_packet_fields(self, packet: int) -> dict:
         """Parse a packet and returns a dictionary of all of its fields."""
         return parse_config_packet_fields(self.asic_dict, packet)
 
@@ -243,18 +243,18 @@ class asic_spec:
         return copy.deepcopy(self.reg_to_field)
 
 def asic_spec_from_yaml(path: str):
-    """Create an asic_spec instance from a YAML configuration file.
+    """Create an AsicSpec instance from a YAML configuration file.
 
     Reads a YAML file for particular ASIC version, validates the
     register space and configuration packet definitions, and returns
-    an asic_spec object encapsulating the version-specific
+    an AsicSpec object encapsulating the version-specific
     specification and related helper methods.
 
     Parameters:
         path (str): Path to the YAML file describing the ASIC specification.
 
     Returns:
-        asic_spec: An instance representing the ASIC version specified in the YAML.
+        AsicSpec: An instance representing the ASIC version specified in the YAML.
 
     Raises:
         yaml.YAMLError: If the YAML file cannot be parsed.
@@ -264,4 +264,4 @@ def asic_spec_from_yaml(path: str):
     asic_dict = common.dict_from_yaml(path)
     _reg.validate_dict(asic_dict)
     _pkt.validate_config_packet_dict(asic_dict)
-    return asic_spec(asic_dict)
+    return AsicSpec(asic_dict)

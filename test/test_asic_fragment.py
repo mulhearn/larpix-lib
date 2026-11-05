@@ -6,7 +6,7 @@ import larpix_control.asic._fragment as _frag
 
 from   larpix_control import fragment_lib_from_yaml
 
-class test_asic_fragment(unittest.TestCase):
+class TestAsicFragment(unittest.TestCase):
     """Tests for fragment_helpers.py functionality"""
 
     def setUp(self):

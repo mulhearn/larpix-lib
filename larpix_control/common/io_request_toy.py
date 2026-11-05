@@ -1,10 +1,10 @@
 # larpix_control/pacman/io_request_toy.py
 
 import time
-from larpix_control.common.interfaces import io_request_iface
+from larpix_control.common.interfaces import IoRequestIface
 from larpix_control import pacman_message as pm
 
-class io_request_toy(io_request_iface):
+class IoRequestToy(IoRequestIface):
     """
     Toy/mock implementation of io_request_interface.
     Prints all messages instead of sending them.

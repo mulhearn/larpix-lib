@@ -1,18 +1,18 @@
 import unittest
 
-from larpix_control import asic_spec, asic_spec_from_yaml, fragment_lib_from_yaml, asic_config
-from larpix_control.common.io_request_toy import io_request_toy
+from larpix_control import AsicSpec, asic_spec_from_yaml, fragment_lib_from_yaml, AsicConfig
+from larpix_control.common.io_request_toy import IoRequestToy
 
-verbose = False
+VERBOSE = False
 
-class test_asic_config(unittest.TestCase):
+class TestAsicConfig(unittest.TestCase):
     """tests related to asic model structure and verification"""
 
     def setUp(self):
         print("")
         self.asic_spec = asic_spec_from_yaml("config/asics/larpix_v3.yaml")
         self.frag_lib = fragment_lib_from_yaml("config/fragments/library.yaml", "larpix_v3")
-        self.cfg = asic_config(io_request_toy(), self.asic_spec, self.frag_lib, verbose=True)
+        self.cfg = AsicConfig(IoRequestToy(), self.asic_spec, self.frag_lib, verbose=True)
 
     def test_aaa_test_list(self):
         print("")

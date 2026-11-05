@@ -5,7 +5,7 @@ Send multiple TX words to PACMAN using REQ/REP.
 
 import sys
 import time
-from larpix_control.pacman.zmq_req import get_req_socket, send_and_receive, request_timeout
+from larpix_control.pacman.zmq_req import get_req_socket, send_and_receive, RequestTimeoutError
 from larpix_control import pacman_message as pm
 
 def main():
@@ -25,7 +25,7 @@ def main():
 
         try:
             reply = send_and_receive(sock, tx_msg)
-        except request_timeout:
+        except RequestTimeoutError:
             print("Timeout: no reply from server")
             sys.exit(1)
 

@@ -4,7 +4,7 @@ import unittest
 import larpix_control.common as common
 import larpix_control.asic._config_packet as _pkt
 
-class test_asic_config_packet(unittest.TestCase):
+class TestAsicConfigPacket(unittest.TestCase):
     """Tests for config_helpers.py functionality"""
 
     def setUp(self):

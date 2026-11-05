@@ -1,5 +1,5 @@
 from collections import deque
-from .node import node
+from .node import Node
 
 from larpix_control.common.helpers import validate_required_keys, validate_required_lists, validate_required_dicts
 
@@ -198,7 +198,7 @@ def build_node_tree(parsed: dict, params: dict) -> dict:
     grid_deltas = params["grid_deltas"]
 
     # each chip id in the direction is mapped to a node:
-    nodes = {chip_id: node(chip_id=chip_id) for chip_id in parsed}
+    nodes = {chip_id: Node(chip_id=chip_id) for chip_id in parsed}
 
     # setup the root chip:
     root_chip = find_root_chip_id(parsed)

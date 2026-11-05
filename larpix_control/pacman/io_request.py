@@ -2,14 +2,14 @@
 """
 Manager for PACMAN UART REQ/REP traffic.
 
-This module provides a single io_request manager class that:
+This module provides a single IoRequest manager class that:
   - loads fixed_network.yaml
   - builds a routing table mapping io_channel -> route_info
   - creates one REQ socket per pacman (io_group)
   - routes send_packets/send_string calls by io_channel to the correct socket
 
 Usage:
-    io = io_request()                       # uses package-relative config path
+    io = IoRequest()                        # uses package-relative config path
     io.send_string(0x101, "hello")
     io.send_packets(0x101, [pkt1, pkt2])
     io.set_timeout(0x101, 3000)             # update timeout for that channel's socket
@@ -25,14 +25,14 @@ from typing import Dict, Any, Optional
 
 import zmq
 
-from larpix_control.pacman.zmq_req import get_req_socket, send_and_receive, request_timeout
+from larpix_control.pacman.zmq_req import get_req_socket, send_and_receive, RequestTimeoutError
 from larpix_control import pacman_message as pm
-from larpix_control.common.interfaces import io_request_iface
+from larpix_control.common.interfaces import IoRequestIface
 
-_default_yaml = os.path.join(os.path.dirname(__file__), "..", "..", "config", "network", "single_local.yaml")
-_default_yaml = os.path.normpath(_default_yaml)
+_DEFAULT_YAML = os.path.join(os.path.dirname(__file__), "..", "..", "config", "network", "single_local.yaml")
+_DEFAULT_YAML = os.path.normpath(_DEFAULT_YAML)
 
-class io_request(io_request_iface):
+class IoRequest(IoRequestIface):
     """
     Manager for UART REQ/REP access by io_channel.
 
@@ -53,7 +53,7 @@ class io_request(io_request_iface):
         debug_fn, if provided, will be called with debug strings.
         """
         if config_path is None:
-            config_path = _default_yaml
+            config_path = _DEFAULT_YAML
 
         self._debug_fn = debug_fn
         self.config_path = config_path
@@ -193,7 +193,7 @@ class io_request(io_request_iface):
                 self._debug_fn(f"route send: io_chan={hex(io_chan)} -> io_group={grp} endpoint={route['endpoint']}")
             try:
                 rep = send_and_receive(sock, msg)
-            except request_timeout:
+            except RequestTimeoutError:
                 replies.append(None)
                 continue
             replies.append(rep)
@@ -215,7 +215,7 @@ class io_request(io_request_iface):
             self._debug_fn(f"route send_string: io_chan={hex(io_chan)} -> io_group={grp} endpoint={route['endpoint']}")
         try:
             rep = send_and_receive(sock, msg)
-        except request_timeout:
+        except RequestTimeoutError:
             return None
         return rep
 

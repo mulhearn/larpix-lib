@@ -7,15 +7,15 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from   asic.helpers import dict_from_yaml
 
-from asic import asic_spec, asic_spec_from_yaml
+from asic import AsicSpec, asic_spec_from_yaml
 from asic import chip_state
-from asic import hydra_strand
+from asic import HydraStrand
 from asic import load_fragment_library
 
-verbose = True
+VERBOSE = True
 
 def main():
-        toy = asic_config_toy()
+        toy = AsicConfigToy()
         raw_network = dict_from_yaml("config/hydra/single.yaml")
         raw_params  = dict_from_yaml("config/hydra/parameters.yaml")
 
