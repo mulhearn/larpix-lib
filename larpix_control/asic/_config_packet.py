@@ -238,6 +238,14 @@ def valid_config_packet(asic_dict: dict, packet: int, write: Optional[int]=None,
 
     return True
 
+def valid_config_write(asic_dict: dict, packet: int, downstream: Optional[int] = None) -> bool:
+    """Check if packet is a valid configuration write."""
+    return valid_config_packet(asic_dict, packet, write=True, downstream=downstream)
+
+def valid_config_read_request(asic_dict: dict, packet: int) -> bool:
+    """Check if packet is a valid configuration read request."""
+    return valid_config_packet(asic_dict, packet, write=False, downstream=0)
+
 def valid_config_read_response(asic_dict: dict, packet: int) -> bool:
     """Check if packet is a valid configuration read response."""
     return valid_config_packet(asic_dict, packet,downstream=1,write=False)

@@ -208,19 +208,27 @@ class AsicSpec:
 
     def valid_config_read_response(self, packet: int) -> bool:
         """Check if packet is a valid configuration read response."""
-        return valid_config_read_response(self.asic_dict, packet)
+        return _pkt.valid_config_read_response(self.asic_dict, packet)
+
+    def valid_config_write(self, packet: int, downstream: Optional[int] = None) -> bool:
+        """Check if packet is a valid configuration write."""
+        return _pkt.valid_config_write(self.asic_dict, packet, downstream)
+
+    def valid_config_read_request(self, packet: int) -> bool:
+        """Check if packet is a valid configuration read request."""
+        return _pkt.valid_config_read_request(self.asic_dict, packet)
 
     def parse_chip_address_value(self, packet: int) -> [int,int,int]:
         """Parse chip, address, and value from a valid config packet"""
-        return parse_chip_address_value(self.asic_dict, packet)
+        return _pkt.parse_chip_address_value(self.asic_dict, packet)
 
     def parse_config_packet_fields(self, packet: int) -> dict:
         """Parse a packet and returns a dictionary of all of its fields."""
-        return parse_config_packet_fields(self.asic_dict, packet)
+        return _pkt.parse_config_packet_fields(self.asic_dict, packet)
 
     def print_packet_detailed(self, packet: int) -> None:
         """Print a detailed description of the contents of a config packet."""
-        return print_packet_detailed(self.asic_dict, packet)
+        return _pkt.print_packet_detailed(self.asic_dict, packet)
 
     def format_packet(self, packet: int) -> str :
         """Return a string representation of a config packet."""
