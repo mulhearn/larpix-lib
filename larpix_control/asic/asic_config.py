@@ -1,26 +1,30 @@
 # larpix/asic/asic_config.py
 
 from typing import Any
-from larpix_control.common.interfaces import AsicConfigIface, IoRequestIface
+from larpix_control.common.interfaces import AsicConfigIface, AsicRegisterIface, RegisterOp
 
 from .asic_spec import AsicSpec
 from . import _fragment as _frag
 
 class AsicConfig(AsicConfigIface):
-    """Concrete ASIC configuration class (no-op skeleton).
+    """ASIC configuration through fragments, written as register ops on one io channel.
 
     Requires an AsicSpec instance and a collapsed fragment library
     at initialization.
     """
 
-    def __init__(self, io_req: IoRequestIface, spec: AsicSpec, frag_lib: dict[str, dict], verbose: bool = False):
+    def __init__(self, reg_io: AsicRegisterIface, spec: AsicSpec, frag_lib: dict[str, dict],
+                 io_chan: int, verbose: bool = False):
         """
         Parameters:
+            reg_io: register access to the ASICs
             spec: an instance of AsicSpec representing the hardware
             frag_lib: dict of collapsed fragments, keyed by name
+            io_chan: the io channel of the chips configured
             verbose: optional flag for printing progress
         """
-        self.io_req = io_req
+        self.reg_io = reg_io
+        self.io_chan = io_chan
         self.spec = spec
         self.frag_lib = frag_lib
         self.verbose = verbose
@@ -29,13 +33,15 @@ class AsicConfig(AsicConfigIface):
             spec_name = spec.name()
             print(f"AsicConfig initialized with spec {spec_name} and {len(frag_lib)} fragments")
 
-    # hack for TX during development:
-    def tx_list(self, l: [int]):
-        self.io_req.send_packets(1, l)
-        for w in l:
-            pkt = self.spec.format_packet(w)
-            print(f"#TRACE I/O:  0x{w:016X} {pkt}")
-            #print(f"./utils/pacman_util.py --tx 1 0x{w:016X}")
+    def write_fields(self, chip_id: int, update: dict) -> None:
+        """Write the registers holding the field updates to chip_id."""
+        ops = [RegisterOp.write(self.io_chan, chip_id, reg, value)
+               for reg, value in self.spec.build_write_list(update=update)]
+        for op in ops:
+            print(f"#TRACE I/O:  chan 0x{op.io_chan:X} chip {op.chip} reg {op.reg} = 0x{op.value:02X}")
+        replies = self.reg_io.transmit(ops, fire_and_forget=True)
+        if not replies.complete:
+            print(f"WARNING:  chip {chip_id}:  writes not all acknowledged")
 
     def list_fragments(self):
         print("available fragments:")
@@ -50,8 +56,7 @@ class AsicConfig(AsicConfigIface):
         if self.verbose:
             _frag.print_evaluated(evaluated)
         #chip_id is 1 after reset:
-        wl = self.spec.build_config_write_list(1,update=evaluated)
-        self.tx_list(wl)
+        self.write_fields(1, evaluated)
 
     def init_root_chip_io(self, chip_id: int, fpga_port: str) -> None:
         if self.verbose:
@@ -62,8 +67,7 @@ class AsicConfig(AsicConfigIface):
         if self.verbose:
             print("INFO:  evaluated init_rx_root_chip fragment:")
             _frag.print_evaluated(evaluated)
-        wl = self.spec.build_config_write_list(chip_id, update=evaluated)
-        self.tx_list(wl)
+        self.write_fields(chip_id, evaluated)
         self.init_io(chip_id)
 
     def init_io(self, chip_id: int) -> None:
@@ -75,8 +79,7 @@ class AsicConfig(AsicConfigIface):
         evaluated = _frag.evaluate_collapsed(rxtx, [], verbose=self.verbose)
         if self.verbose:
             _frag.print_evaluated(evaluated)
-        wl = self.spec.build_config_write_list(chip_id, update=evaluated)
-        self.tx_list(wl)
+        self.write_fields(chip_id, evaluated)
 
     def set_input_enables(self, chip_id: int, ports: list[str]) -> None:
         port_idxs = self.spec.input_indices(ports)
@@ -88,8 +91,7 @@ class AsicConfig(AsicConfigIface):
         evaluated = _frag.evaluate_collapsed(frag, external, verbose=self.verbose)
         if self.verbose:
             _frag.print_evaluated(evaluated)
-        wl = self.spec.build_config_write_list(chip_id, update=evaluated)
-        self.tx_list(wl)
+        self.write_fields(chip_id, evaluated)
 
     def set_downstream_output_enables(self, chip_id: int, ports: list[str]) -> None:
         port_idxs = self.spec.output_indices(ports)
@@ -101,8 +103,7 @@ class AsicConfig(AsicConfigIface):
         evaluated = _frag.evaluate_collapsed(frag, external, verbose=self.verbose)
         if self.verbose:
             _frag.print_evaluated(evaluated)
-        wl = self.spec.build_config_write_list(chip_id, update=evaluated)
-        self.tx_list(wl)
+        self.write_fields(chip_id, evaluated)
 
     def set_upstream_output_enables(self, chip_id: int, ports: list[str]) -> None:
         port_idxs = self.spec.output_indices(ports)
@@ -114,5 +115,4 @@ class AsicConfig(AsicConfigIface):
         evaluated = _frag.evaluate_collapsed(frag, external, verbose=self.verbose)
         if self.verbose:
             _frag.print_evaluated(evaluated)
-        wl = self.spec.build_config_write_list(chip_id, update=evaluated)
-        self.tx_list(wl)
+        self.write_fields(chip_id, evaluated)

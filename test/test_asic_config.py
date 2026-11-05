@@ -1,7 +1,7 @@
 import unittest
 
 from larpix_control import AsicSpec, asic_spec_from_yaml, fragment_lib_from_yaml, AsicConfig
-from larpix_control.common.io_request_toy import IoRequestToy
+from larpix_control.common.asic_register_toy import AsicRegisterToy
 
 VERBOSE = False
 
@@ -12,7 +12,8 @@ class TestAsicConfig(unittest.TestCase):
         print("")
         self.asic_spec = asic_spec_from_yaml("config/asics/larpix_v3.yaml")
         self.frag_lib = fragment_lib_from_yaml("config/fragments/library.yaml", "larpix_v3")
-        self.cfg = AsicConfig(IoRequestToy(), self.asic_spec, self.frag_lib, verbose=True)
+        self.toy = AsicRegisterToy()
+        self.cfg = AsicConfig(self.toy, self.asic_spec, self.frag_lib, 1, verbose=True)
 
     def test_aaa_test_list(self):
         print("")
@@ -26,6 +27,10 @@ class TestAsicConfig(unittest.TestCase):
         self.cfg.set_input_enables(12, ["w", "e"])
         self.cfg.set_downstream_output_enables(12, ["w"])
         self.cfg.set_upstream_output_enables(11, ["e"])
+
+    def test_ccc_chip_id_written(self):
+        self.cfg.set_chip_id(11)
+        self.assertEqual(self.toy.registers[(1, 1, 122)], 11)
 
 if __name__ == "__main__":
     unittest.main()

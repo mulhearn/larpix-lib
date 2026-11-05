@@ -3,3 +3,6 @@ from .helpers import validate_required_keys   # noqa: F401
 from .helpers import validate_required_lists  # noqa: F401
 from .helpers import validate_required_dicts  # noqa: F401
 from .interfaces import AsicConfigIface       # noqa: F401
+from .interfaces import AsicRegisterIface     # noqa: F401
+from .interfaces import OpType, RegisterKey, RegisterOp  # noqa: F401
+from .interfaces import WriteReply, ReadReply, OpReplies  # noqa: F401
