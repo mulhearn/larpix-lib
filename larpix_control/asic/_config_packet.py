@@ -200,6 +200,29 @@ def build_config_read(asic_dict: dict, chip: int, addr: int) -> int:
     """
     return build_config_packet(asic_dict, chip, addr, value=0, downstream=0,write=False)
 
+def valid_data_packet(asic_dict: dict, packet: int, downstream: Optional[int] = None) -> bool:
+    """Check if packet is a valid data packet."""
+    data_packet = asic_dict["data_packet"]
+    params     = data_packet["parameters"]
+    fields     = data_packet["fields"]
+
+    type_field  = fields["type"]
+    type_bits   = _get_bits(packet, *type_field["bits"])
+    if type_bits != params["type_data"]:
+        return False
+
+    if downstream is not None:
+        downstream_bits = _get_bits(packet, *fields["downstream"]["bits"])
+        if downstream_bits != downstream:
+            return False
+
+    if "parity" in fields:
+        if _calc_parity(packet, params["total_bits"]) != params["parity_value"]:
+            return False
+
+    return True
+
+
 def valid_config_packet(asic_dict: dict, packet: int, write: Optional[int]=None, downstream: Optional[int]=None) -> bool:
     """Check if packet is a valid configuration packet."""
     cfg_packet = asic_dict["config_packet"]

@@ -632,6 +632,77 @@ register_space:
       reset_value: 0x5
       description: LVDS common-mode voltage for each PISO link
 
+data_packet:
+  parameters:
+    total_bits: 64
+    parity_value: 1
+    type_data: 0b01
+  fields:
+    type:
+      bits: [1, 0]
+      description: Packet type (0b01 = data)
+      const: {data: 0b01}
+
+    chip:
+      bits: [9, 2]
+      description: Chip ID (8 bits)
+
+    channel:
+      bits: [15, 10]
+      description: Channel (6 bits)
+
+    timestamp:
+      bits: [43, 16]
+      disabled_by: [enable_fifo_diagnostics, enable_local_fifo_diagnostics, mark_first_packet]
+      description: 28-bit timestamp
+
+    reset_sample_flag:
+      bits: [44, 44]
+      description: In CDS mode, 1 for the reset sample, 0 for data samples
+
+    cds_flag:
+      bits: [45, 45]
+      description: 0 no correlated double sampling, 1 correlated double sampling
+
+    data_word:
+      bits: [55, 46]
+      description: 10-bit ADC data word
+
+    trigger_type:
+      bits: [57, 56]
+      description: 00 normal, 01 external, 10 cross, 11 periodic
+
+    local_fifo:
+      bits: [59, 58]
+      description: Local FIFO, bit 58 half full, bit 59 full
+
+    shared_fifo:
+      bits: [61, 60]
+      description: Shared FIFO, bit 60 half full, bit 61 full
+
+    downstream:
+      bits: [62, 62]
+      description: 0 upstream packet, 1 downstream packet
+
+    parity:
+      bits: [63, 63]
+      description: Parity bit (overall parity odd)
+
+    shared_fifo_count:
+      bits: [43, 32]
+      enabled_by: enable_fifo_diagnostics
+      description: Events in the shared FIFO
+
+    local_fifo_count:
+      bits: [31, 28]
+      enabled_by: enable_local_fifo_diagnostics
+      description: Events in this channel's local FIFO
+
+    first_packet:
+      bits: [43, 43]
+      enabled_by: mark_first_packet
+      description: 1 for the first packet of a burst, 0 for the others
+
 config_packet:
   parameters:
     total_bits: 64
