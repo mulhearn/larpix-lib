@@ -15,7 +15,8 @@ import zmq
 from larpix_control.asic._correlator import ReplyCorrelator
 from larpix_control.asic.asic_spec import AsicSpec
 from larpix_control.common.interfaces import (
-    AsicRegisterIface, BoardControlIface, OpReplies, OpType, RegisterOp, ResetType)
+    AsicDataIface, AsicRegisterIface, BoardControlIface, OpReplies, OpType, Rail, RegisterOp,
+    ResetType, RxWord)
 from larpix_control.pacman import message as pm
 
 DATA_PORT = 5556            # pacman_dataserver
@@ -37,7 +38,7 @@ _VDDA_DAC = 0xE2FF           # Nominal tile power (as pacman_menu)
 _VDDD_DAC = 0x75FF
 
 
-class Pacman(AsicRegisterIface, BoardControlIface):
+class Pacman(AsicRegisterIface, BoardControlIface, AsicDataIface):
     """One PACMAN (one io_group):  ASIC register access and board control.
 
     Built from one entry of a network YAML file:  io_group, hostname, port (pacman_cmdserver),
@@ -69,6 +70,7 @@ class Pacman(AsicRegisterIface, BoardControlIface):
         self._sub.setsockopt(zmq.LINGER, 0)
         self._sub.connect(f"tcp://{self._hostname}:{self._data_port}")
         self._last_reset = None
+        self._data = None  # SUB socket of start_data
 
     @property
     def io_group(self) -> int:
@@ -199,6 +201,7 @@ class Pacman(AsicRegisterIface, BoardControlIface):
 
     def close(self) -> None:
         """Close all connections."""
+        self.stop_data()
         for sock in (self._req, self._sub):
             if sock is not None:
                 sock.close()
@@ -229,6 +232,19 @@ class Pacman(AsicRegisterIface, BoardControlIface):
         self._check_tile(tile)
         self._write(_VSPACE_TILE_OFF, tile)
 
+    def rail_off(self, tile: int, rail: Rail) -> None:
+        """Set rail of tile to zero (its DAC at 0);  the tile stays enabled."""
+        self._check_tile(tile)
+        self._write((_VSPACE_VDDA_DAC if rail == Rail.VDDA else _VSPACE_VDDD_DAC) + tile, 0)
+
+    def rail_on(self, tile: int, rail: Rail) -> None:
+        """Set rail of tile back to its nominal value (as pacman_menu)."""
+        self._check_tile(tile)
+        if rail == Rail.VDDA:
+            self._write(_VSPACE_VDDA_DAC + tile, _VDDA_DAC)
+        else:
+            self._write(_VSPACE_VDDD_DAC + tile, _VDDD_DAC)
+
     def uart_enable(self, io_chan: int) -> None:
         """Deliver words received on io_chan."""
         self._check_chan(io_chan)
@@ -238,6 +254,35 @@ class Pacman(AsicRegisterIface, BoardControlIface):
         """Stop delivering words received on io_chan;  they are lost, not queued."""
         self._check_chan(io_chan)
         self._write(_VSPACE_UART_RX_OFF, io_chan - self._first_io_chan)
+
+    def start_data(self) -> None:
+        """Start receiving from pacman_dataserver (a SUB socket of its own)."""
+        if self._data is None:
+            self._data = self._ctx.socket(zmq.SUB)
+            self._data.setsockopt(zmq.LINGER, 0)
+            self._data.setsockopt(zmq.SUBSCRIBE, b"")
+            self._data.connect(f"tcp://{self._hostname}:{self._data_port}")
+
+    def read_data(self, timeout_ms: int) -> list[RxWord]:
+        """Words received since the last read;  waits up to timeout_ms for the first."""
+        if self._data is None:
+            return []
+        by_wire = {c & 0xFF: c for c in self.io_chans}
+        words = []
+        wait = timeout_ms
+        while self._data.poll(wait):
+            _, msg_words = pm.unpack_msg(self._data.recv())
+            for w in msg_words:
+                if w[0] == "DATA" and w[2] in by_wire:
+                    words.append(RxWord(by_wire[w[2]], w[4], w[3]))
+            wait = 0
+        return words
+
+    def stop_data(self) -> None:
+        """Stop receiving;  words not yet read are discarded."""
+        if self._data is not None:
+            self._data.close()
+            self._data = None
 
 
 def load_network(path: str, spec: AsicSpec, verbose: bool = False) -> dict[int, Pacman]:

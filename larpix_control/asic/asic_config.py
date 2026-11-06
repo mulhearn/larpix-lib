@@ -48,6 +48,13 @@ class AsicConfig(AsicConfigIface):
         for name in self.frag_lib:
             print(f"  {name}")
 
+    def apply_fragment(self, chip_id: int, name: str, **params: int) -> None:
+        """Write the fragment called name to chip_id, its parameters given by params."""
+        evaluated = _frag.evaluate_collapsed(self.frag_lib[name], dict(params), verbose=self.verbose)
+        if self.verbose:
+            _frag.print_evaluated(evaluated)
+        self.write_fields(chip_id, evaluated)
+
     def set_chip_id(self, chip_id: int):
         if self.verbose:
             print(f"INFO: initializing new chip with chip_id {chip_id}")

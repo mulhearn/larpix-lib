@@ -1,7 +1,7 @@
 import unittest
 
 from larpix_control.common.board_toy import BoardToy
-from larpix_control.common.interfaces import RegisterOp, ResetType
+from larpix_control.common.interfaces import Rail, RegisterOp, ResetType
 
 ENTRY = {"io_group": 2, "hostname": "localhost", "port": 5555, "timeout_ms": 100,
          "first_io_chan": 0x201, "uart_mask": 0xFF, "uarts_per_tile": 4}
@@ -47,6 +47,21 @@ class TestBoardToy(unittest.TestCase):
         self.assertNotIn((0x205, 11, 125), toy.registers)
         with self.assertRaises(ValueError):
             toy.power_on(2)                                      # Not on this board
+
+    def test_rails(self):
+        toy = BoardToy()
+        toy.transmit([RegisterOp.write(1, 11, 125, 2)])
+        toy.rail_off(0, Rail.VDDA)
+        toy.rail_on(0, Rail.VDDA)
+        self.assertEqual(toy.registers[(1, 11, 125)], 2)        # VDDA keeps the configuration
+        toy.rail_off(0, Rail.VDDD)
+        self.assertNotIn((1, 11, 125), toy.registers)           # VDDD loses it
+
+    def test_data(self):
+        toy = BoardToy()
+        toy.start_data()
+        self.assertEqual(toy.read_data(1), [])
+        toy.stop_data()
 
 
 if __name__ == "__main__":

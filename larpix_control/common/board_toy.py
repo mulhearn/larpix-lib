@@ -1,16 +1,17 @@
 # larpix_control/common/board_toy.py
 """Toy board:  AsicRegisterIface and BoardControlIface, registers in memory, no hardware."""
 
+import time
 from typing import Any
 
 from larpix_control.common.interfaces import (
-    AsicRegisterIface, BoardControlIface, OpReplies, OpType, ReadReply, RegisterKey, RegisterOp,
-    ResetType, WriteReply)
+    AsicDataIface, AsicRegisterIface, BoardControlIface, OpReplies, OpType, Rail, ReadReply,
+    RegisterKey, RegisterOp, ResetType, RxWord, WriteReply)
 
 _DEFAULT_ENTRY = {"io_group": 1, "first_io_chan": 1, "uart_mask": 0xF, "uarts_per_tile": 4}
 
 
-class BoardToy(AsicRegisterIface, BoardControlIface):
+class BoardToy(AsicRegisterIface, BoardControlIface, AsicDataIface):
     """A readout board without hardware:  registers held in memory.
 
     Acknowledges every op.  Reads return the last value written (0 if none), and get no reply on
@@ -107,6 +108,16 @@ class BoardToy(AsicRegisterIface, BoardControlIface):
         self._check_tile(tile)
         self._clear(tile)
 
+    def rail_off(self, tile: int, rail: Rail) -> None:
+        """Set rail of tile to zero;  VDDD off clears the tile's registers."""
+        self._check_tile(tile)
+        if rail == Rail.VDDD:
+            self._clear(tile)
+
+    def rail_on(self, tile: int, rail: Rail) -> None:
+        """Set rail of tile back to its nominal value."""
+        self._check_tile(tile)
+
     def uart_enable(self, io_chan: int) -> None:
         """Enable UART RX at io_chan."""
         self._check_chan(io_chan)
@@ -116,3 +127,14 @@ class BoardToy(AsicRegisterIface, BoardControlIface):
         """Disable (silence) UART RX at io_chan."""
         self._check_chan(io_chan)
         self._disabled.add(io_chan)
+
+    def start_data(self) -> None:
+        """Start receiving:  a toy board produces no data (simulation is for a simulator)."""
+
+    def read_data(self, timeout_ms: int) -> list[RxWord]:
+        """An empty list, after waiting timeout_ms."""
+        time.sleep(timeout_ms / 1000)
+        return []
+
+    def stop_data(self) -> None:
+        """Stop receiving;  words not yet read are discarded."""

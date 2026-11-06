@@ -23,3 +23,12 @@ library:
   - name: set_upstream
     path: config/fragments/set_upstream.yaml
 
+  - name: pedestal_trigger
+    path: config/fragments/pedestal_trigger.yaml
+
+  - name: pedestal_channels
+    path: config/fragments/pedestal_channels.yaml
+
+  - name: pedestal_stop
+    path: config/fragments/pedestal_stop.yaml
+

@@ -1,0 +1,6 @@
+# Pedestals, step 2 (as larpix-control's pedestal_qc.py):  every channel triggered and read out.
+external: []
+
+default:
+  periodic_trigger_mask: 0
+  channel_mask:          0

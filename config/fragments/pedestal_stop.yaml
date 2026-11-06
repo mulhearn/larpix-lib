@@ -1,0 +1,11 @@
+# Pedestals stopped:  register 128 back to its reset values (periodic trigger and reset off).
+external: []
+
+default:
+  enable_cross_trigger:            0
+  enable_periodic_reset:           0
+  enable_rolling_periodic_reset:   0
+  enable_periodic_trigger:         0
+  enable_rolling_periodic_trigger: 0
+  enable_periodic_trigger_veto:    1
+  enable_hit_veto:                 1

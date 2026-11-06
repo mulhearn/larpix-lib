@@ -226,6 +226,17 @@ class AsicSpec:
         """Parse a packet and returns a dictionary of all of its fields."""
         return _pkt.parse_config_packet_fields(self.asic_dict, packet)
 
+    def valid_data_packet(self, packet: int) -> bool:
+        """Check if packet is a valid data packet (type and parity)."""
+        return _pkt.valid_data_packet(self.asic_dict, packet)
+
+    def parse_data_packet_fields(self, packet: int) -> dict:
+        """Parse a data packet and return a dictionary of its fields:  enabled_by fields off,
+        disabled_by fields on."""
+        fields = self.asic_dict["data_packet"]["fields"]
+        return {name: _pkt._get_bits(packet, *field["bits"])
+                for name, field in fields.items() if "enabled_by" not in field}
+
     def print_packet_detailed(self, packet: int) -> None:
         """Print a detailed description of the contents of a config packet."""
         return _pkt.print_packet_detailed(self.asic_dict, packet)

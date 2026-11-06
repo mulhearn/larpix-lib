@@ -46,3 +46,8 @@ class AsicConfigToy(common.AsicConfigIface):
         if self.verbose:
             ports_str = ", ".join(ports)
             print(f"INFO: set upstream output enables for chip {chip_id} to {ports_str}")
+
+    def apply_fragment(self, chip_id: int, name: str, **params: int) -> None:
+        """Write the fragment called name to chip_id, its parameters given by params."""
+        if self.verbose:
+            print(f"INFO: apply fragment {name} to chip {chip_id} with {params}")

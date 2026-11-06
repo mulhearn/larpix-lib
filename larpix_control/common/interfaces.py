@@ -44,6 +44,11 @@ class AsicConfigIface(ABC):
         """Set enables for transmitting upstream (from FPGA)"""
         pass
 
+    @abstractmethod
+    def apply_fragment(self, chip_id: int, name: str, **params: int) -> None:
+        """Write the fragment called name to chip_id, its parameters given by params."""
+        pass
+
 
 class OpType(Enum):
     """Kinds of register access."""
@@ -139,6 +144,19 @@ class ResetType(Enum):
     INTERNAL = auto()   # Internal state cleared, configuration kept
 
 
+class Rail(Enum):
+    """Power rails of a tile."""
+    VDDA = auto()       # Analog:  off, the front end is unpowered and the configuration kept
+    VDDD = auto()       # Digital:  off, the configuration is lost
+
+
+class RxWord(NamedTuple):
+    """One ASIC word received by the board."""
+    io_chan: int
+    word: int           # The 64-bit ASIC word
+    timestamp: int      # The board's receive time stamp
+
+
 class BoardControlIface(ABC):
     """Control of one readout board (one io_group), other than ASIC configuration.
 
@@ -183,6 +201,16 @@ class BoardControlIface(ABC):
         pass
 
     @abstractmethod
+    def rail_off(self, tile: int, rail: Rail) -> None:
+        """Set rail of tile to zero;  the tile stays enabled."""
+        pass
+
+    @abstractmethod
+    def rail_on(self, tile: int, rail: Rail) -> None:
+        """Set rail of tile back to its nominal value."""
+        pass
+
+    @abstractmethod
     def uart_enable(self, io_chan: int) -> None:
         """Deliver words received on io_chan."""
         pass
@@ -190,4 +218,23 @@ class BoardControlIface(ABC):
     @abstractmethod
     def uart_disable(self, io_chan: int) -> None:
         """Stop delivering words received on io_chan;  they are lost, not queued."""
+        pass
+
+
+class AsicDataIface(ABC):
+    """Everything the ASICs on one board's io channels send, as it arrives."""
+
+    @abstractmethod
+    def start_data(self) -> None:
+        """Start receiving every ASIC word;  read_data regularly."""
+        pass
+
+    @abstractmethod
+    def read_data(self, timeout_ms: int) -> list[RxWord]:
+        """Words received since the last read;  waits up to timeout_ms for the first."""
+        pass
+
+    @abstractmethod
+    def stop_data(self) -> None:
+        """Stop receiving;  words not yet read are discarded."""
         pass
