@@ -2,7 +2,7 @@
 import sys
 from pathlib import Path
 
-from larpix_control import common, AsicSpec, asic_spec_from_yaml, fragment_lib_from_yaml, AsicConfig, HydraStrand, PacmanAsicRegister
+from larpix_control import common, AsicSpec, asic_spec_from_yaml, fragment_lib_from_yaml, AsicConfig, HydraStrand, load_network
 
 VERBOSE = False
 
@@ -13,7 +13,7 @@ def main():
         raw_network = common.dict_from_yaml("config/hydra/single.yaml")
         #raw_network = common.dict_from_yaml("config/hydra/pair.yaml")
         raw_params  = common.dict_from_yaml("config/hydra/parameters.yaml")
-        reg_io = PacmanAsicRegister("config/network/single_bench.yaml", asic_spec)
+        reg_io = load_network("config/network/single_bench.yaml", asic_spec)[1]
         cfg = AsicConfig(reg_io, asic_spec, frag_lib, 1, verbose=VERBOSE)
         strand = HydraStrand(raw_network, raw_params, cfg)
 

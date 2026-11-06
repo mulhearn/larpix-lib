@@ -4,7 +4,7 @@ from pathlib import Path
 
 from larpix_control import common, AsicSpec, asic_spec_from_yaml, fragment_lib_from_yaml, AsicConfig, HydraStrand
 
-from larpix_control.common.asic_register_toy import AsicRegisterToy
+from larpix_control.common.board_toy import BoardToy
 
 VERBOSE = False
 
@@ -15,7 +15,7 @@ def main():
         raw_network = common.dict_from_yaml("config/hydra/single.yaml")
         #raw_network = common.dict_from_yaml("config/hydra/pair.yaml")
         raw_params  = common.dict_from_yaml("config/hydra/parameters.yaml")
-        cfg = AsicConfig(AsicRegisterToy(), asic_spec, frag_lib, 1, verbose=VERBOSE)
+        cfg = AsicConfig(BoardToy(verbose=True), asic_spec, frag_lib, 1, verbose=VERBOSE)
         strand = HydraStrand(raw_network, raw_params, cfg)
 
         if VERBOSE:

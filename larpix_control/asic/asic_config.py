@@ -37,7 +37,7 @@ class AsicConfig(AsicConfigIface):
         """Write the registers holding the field updates to chip_id."""
         ops = [RegisterOp.write(self.io_chan, chip_id, reg, value)
                for reg, value in self.spec.build_write_list(update=update)]
-        for op in ops:
+        for op in ops if self.verbose else []:
             print(f"#TRACE I/O:  chan 0x{op.io_chan:X} chip {op.chip} reg {op.reg} = 0x{op.value:02X}")
         replies = self.reg_io.transmit(ops, fire_and_forget=True)
         if not replies.complete:

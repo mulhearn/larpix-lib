@@ -1,7 +1,7 @@
 import unittest
 
 from larpix_control import AsicSpec, asic_spec_from_yaml, fragment_lib_from_yaml, AsicConfig
-from larpix_control.common.asic_register_toy import AsicRegisterToy
+from larpix_control.common.board_toy import BoardToy
 
 VERBOSE = False
 
@@ -12,7 +12,7 @@ class TestAsicConfig(unittest.TestCase):
         print("")
         self.asic_spec = asic_spec_from_yaml("config/asics/larpix_v3.yaml")
         self.frag_lib = fragment_lib_from_yaml("config/fragments/library.yaml", "larpix_v3")
-        self.toy = AsicRegisterToy()
+        self.toy = BoardToy()
         self.cfg = AsicConfig(self.toy, self.asic_spec, self.frag_lib, 1, verbose=True)
 
     def test_aaa_test_list(self):

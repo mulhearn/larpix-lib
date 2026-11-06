@@ -2,12 +2,14 @@ network:
   - io_group: 1
     hostname: pacman-srv1.local
     port: 5555
-    timeout_ms: 2000
-    first_io_chan: 0x100
+    timeout_ms: 200
+    first_io_chan: 0x101
     uart_mask: 0xF
+    uarts_per_tile: 4
   - io_group: 2
     hostname: pacman-srv2.local
     port: 5555
-    timeout_ms: 2000
-    first_io_chan: 0x200
+    timeout_ms: 200
+    first_io_chan: 0x201
     uart_mask: 0xFF
+    uarts_per_tile: 4

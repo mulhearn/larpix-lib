@@ -53,7 +53,7 @@ class OpType(Enum):
 
 class RegisterKey(NamedTuple):
     """One register of one chip:  chip IDs are unique only within an io channel."""
-    io_chan: int        # PACMAN in the upper bits
+    io_chan: int        # In its board's configured range
     chip: int
     reg: int
 
@@ -62,7 +62,7 @@ class RegisterKey(NamedTuple):
 class RegisterOp:
     """One register access, repeated nrep times back to back."""
     op: OpType
-    io_chan: int        # PACMAN in the upper bits
+    io_chan: int        # In its board's configured range
     chip: int
     reg: int
     value: int = 0      # Used by writes
@@ -130,4 +130,64 @@ class AsicRegisterIface(ABC):
     @abstractmethod
     def close(self) -> None:
         """Close all connections."""
+        pass
+
+
+class ResetType(Enum):
+    """Kinds of ASIC reset."""
+    FULL = auto()       # Registers to their reset values, chip ID 1
+    INTERNAL = auto()   # Internal state cleared, configuration kept
+
+
+class BoardControlIface(ABC):
+    """Control of one readout board (one io_group), other than ASIC configuration.
+
+    Tiles are numbered within the board;  io channels are in the board's configured range.
+    Operations take effect on the ASICs as described and return at once, without replies.
+    """
+
+    @property
+    @abstractmethod
+    def io_group(self) -> int:
+        """The io_group of this board."""
+        pass
+
+    @abstractmethod
+    def ping(self) -> bool:
+        """True if the board answers:  a query, not a poke."""
+        pass
+
+    @abstractmethod
+    def get_tile(self, io_chan: int) -> int:
+        """The tile of io_chan, one of this board's io channels."""
+        pass
+
+    @abstractmethod
+    def reset(self, tile: int, kind: ResetType) -> None:
+        """Reset the ASICs of tile;  see wait_on_reset."""
+        pass
+
+    @abstractmethod
+    def wait_on_reset(self) -> None:
+        """Return once the resets issued have settled."""
+        pass
+
+    @abstractmethod
+    def power_on(self, tile: int) -> None:
+        """Power the ASICs of tile;  they come up as after a full reset."""
+        pass
+
+    @abstractmethod
+    def power_off(self, tile: int) -> None:
+        """Remove power from the ASICs of tile."""
+        pass
+
+    @abstractmethod
+    def uart_enable(self, io_chan: int) -> None:
+        """Deliver words received on io_chan."""
+        pass
+
+    @abstractmethod
+    def uart_disable(self, io_chan: int) -> None:
+        """Stop delivering words received on io_chan;  they are lost, not queued."""
         pass

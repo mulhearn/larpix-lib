@@ -2,6 +2,7 @@ network:
   - io_group: 1
     hostname: 10.42.0.175
     port: 5555
-    timeout_ms: 2000
+    timeout_ms: 200
     first_io_chan: 0x001
     uart_mask: 0xF
+    uarts_per_tile: 4
