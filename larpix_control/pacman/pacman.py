@@ -19,7 +19,7 @@ from larpix_control.common.interfaces import (
 from larpix_control.pacman import message as pm
 
 DATA_PORT = 5556            # pacman_dataserver
-WORDS_PER_MESSAGE = 256     # Words per request to pacman_cmdserver
+WORDS_PER_MESSAGE = 16000   # Words per request:  MAX_WORDS (needs PACMAN software 3.6.3)
 _RESET_SETTLE_S = 0.001      # Settling time after a reset
 
 # pacman_cmdserver virtual registers (pacman-software pacman_vspace.cc;  zero-referenced)
